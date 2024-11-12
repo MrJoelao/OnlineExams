@@ -1,3 +1,4 @@
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -6,6 +7,7 @@ public class Question implements Serializable {
     private final String text;
     private final List<String> options;
     private final int correctAnswer; // indice dell'opzione corretta
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public Question(String text, List<String> options, int correctAnswer) {

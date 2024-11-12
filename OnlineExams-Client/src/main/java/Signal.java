@@ -1,9 +1,11 @@
 // Importazioni necessarie
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 // Definizione della classe Signal che implementa Serializable
 public class Signal implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     
     // Costanti per i tipi di segnale
