@@ -13,18 +13,20 @@ public class Server {
             System.out.println("Server started on port " + port);
 
             List<Question> questions = asList(
-                new Question("First Question?", asList("Option 1", "Option 2", "Option 3", "Option 4"), 1),
-                new Question("Second Question?", asList("Option A", "Option B", "Option C", "Option D"), 2)
-                // Add more questions as needed
+                new Question("First Question?", asList("Option 1", "Option 2", "Option 3", "Option 4"), 0),
+                new Question("Second Question?", asList("Option A", "Option B", "Option C", "Option D"), 1),
+                new Question("Third Question?", asList("Option A", "Option B", "Option C", "Option D"), 2),
+                new Question("Fourth Question?", asList("Option A", "Option B", "Option C", "Option D"), 3)
             );
 
             while (true) {
                 Socket clientSocket = serverConnection.acceptConnection();
                 System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-                try (ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                     ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream())) {
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
+                try {
                     // Send start signal
                     out.writeObject(new Signal(Signal.START));
                     out.flush();
@@ -41,11 +43,14 @@ public class Server {
                     // Send end signal
                     out.writeObject(new Signal(Signal.END));
                     out.flush();
+
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
+                } finally {
+                    out.close();
+                    in.close();
+                    clientSocket.close();
                 }
-
-                clientSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

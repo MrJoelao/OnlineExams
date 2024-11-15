@@ -15,21 +15,20 @@ public class Client {
 
             while (true) {
                 // Riceve oggetto dal server
-                Object receivedObject = clientConnection.receive();
+                clientConnection.read();
 
-                if (receivedObject instanceof Signal) {
-                    Signal signal = (Signal) receivedObject;
-                    if (Signal.END.equals(signal.getType())) {
-                        System.out.println("End of communication.");
-                        break;
-                    } else if (Signal.START.equals(signal.getType())) {
-                        System.out.println("Start of questions.");
-                        continue;
-                    }
+
+                if (clientConnection.isEnd()) {
+                    System.out.println("End of communication.");
+                    break;
+                } else if (clientConnection.isStart()) {
+                    System.out.println("Start of questions.");
+                    continue;
                 }
 
-                if (receivedObject instanceof Question) {
-                    Question question = (Question) receivedObject;
+                Question question = clientConnection.getQuestion();
+
+                if(question != null){
                     System.out.println("Received question: " + question.getText());
                     System.out.println("Options: " + question.getOptions());
 
