@@ -6,7 +6,7 @@ import java.util.List;
 public class Question implements Serializable {
     private final String text;
     private final List<String> options;
-    private final int correctAnswer; // indice dell'opzione corretta
+    private final int correctAnswer;
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -18,11 +18,10 @@ public class Question implements Serializable {
             throw new IllegalArgumentException("The index of the correct answer is invalid. It must be between 0 and " + (options.size() - 1) + ", inclusive.");
         }
         this.text = text;
-        this.options = Collections.unmodifiableList(options); // rende l'elenco delle opzioni immutabile
+        this.options = Collections.unmodifiableList(options);
         this.correctAnswer = correctAnswer;
     }
 
-    // Metodi getter
     public String getText() {
         return text;
     }
@@ -33,5 +32,9 @@ public class Question implements Serializable {
 
     public int getCorrectAnswer() {
         return correctAnswer;
+    }
+
+    public int getOptionsCount() {
+        return options.size();
     }
 }
