@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +17,7 @@ public class ServerConnection {
     private CountDownLatch finishSignal;
     private final AtomicInteger connectedClients;
     private volatile boolean gameStarted = false;
+    private volatile boolean isRunning = true;
     private final Set<String> usedNames = Collections.synchronizedSet(new HashSet<>());
     
     public static final String START = "START";
@@ -43,18 +45,29 @@ public class ServerConnection {
 
     public void startServer() {
         try {
-            while (!executor.isShutdown()) {
-                Socket clientSocket = acceptConnection();
-                if (!gameStarted) {
-                    connectedClients.incrementAndGet();
-                    executor.execute(() -> handleClient(clientSocket));
-                } else {
-                    // Se il gioco è già iniziato, rifiuta nuove connessioni
-                    closeConnections(clientSocket, null, null);
+            while (isRunning) {
+                try {
+                    Socket clientSocket = acceptConnection();
+                    if (!gameStarted) {
+                        connectedClients.incrementAndGet();
+                        executor.execute(() -> handleClient(clientSocket));
+                    } else {
+                        closeConnections(clientSocket, null, null);
+                    }
+                } catch (SocketException e) {
+                    if (!isRunning) {
+                        // Interruzione normale, il server sta chiudendo
+                        break;
+                    }
+                    // Altri errori di socket
+                    System.err.println("Socket error: " + e.getMessage());
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (isRunning) {
+                // Solo se non è una chiusura volontaria
+                System.err.println("Server error: " + e.getMessage());
+            }
         }
     }
 
@@ -190,6 +203,9 @@ public class ServerConnection {
         try {
             return serverSocket.accept();
         } catch (IOException e) {
+            if (!isRunning) {
+                throw new SocketException("Server is shutting down");
+            }
             throw new IOException("Error accepting connection: " + e.getMessage());
         }
     }
@@ -205,11 +221,16 @@ public class ServerConnection {
     }
 
     public void close() throws IOException {
+        isRunning = false;
+        executor.shutdown();
         try {
-            executor.shutdown();
-            serverSocket.close();
-        } catch (IOException e) {
-            throw new IOException("Error closing connection: " + e.getMessage());
+            // Aspetta che tutti i thread terminino
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
         }
+        serverSocket.close();
     }
 }
