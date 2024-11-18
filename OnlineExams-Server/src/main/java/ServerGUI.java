@@ -97,6 +97,7 @@ public class ServerGUI extends JFrame {
     }
 
     private void loadQuestions() {
+        System.out.println("Inizio caricamento delle domande."); // Avvio del caricamento delle domande
         JFileChooser fileChooser = new JFileChooser(FileUtils.getDefaultPath(""));
         int result = fileChooser.showOpenDialog(this);
         
@@ -104,24 +105,32 @@ public class ServerGUI extends JFrame {
             try {
                 File selectedFile = fileChooser.getSelectedFile();
                 loadedQuestions = QuestionParser.parseQuestionsFile(selectedFile.getPath());
+                System.out.println("Domande caricate con successo: " + loadedQuestions.size()); // Domande caricate correttamente
                 updateStatus("Loaded " + loadedQuestions.size() + " questions");
                 startQuizButton.setEnabled(true);
             } catch (IOException ex) {
+                System.out.println("Errore durante il caricamento delle domande: " + ex.getMessage()); // Errore nel caricamento delle domande
                 JOptionPane.showMessageDialog(this, 
                     "Error loading questions: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } else {
+            System.out.println("Caricamento delle domande annullato."); // Annullamento del caricamento delle domande
         }
     }
 
     private void createQuestions() {
+        System.out.println("Inizio creazione di nuove domande."); // Avvio della creazione delle domande
         QuestionCreatorDialog dialog = new QuestionCreatorDialog(this);
         dialog.setVisible(true);
         
         if (dialog.getQuestions() != null) {
             loadedQuestions = dialog.getQuestions();
+            System.out.println("Domande create con successo: " + loadedQuestions.size()); // Domande create correttamente
             updateStatus("Created " + loadedQuestions.size() + " questions");
             startQuizButton.setEnabled(true);
+        } else {
+            System.out.println("Creazione delle domande annullata."); // Annullamento della creazione delle domande
         }
     }
 
@@ -130,6 +139,7 @@ public class ServerGUI extends JFrame {
             JOptionPane.showMessageDialog(this, 
                 "Please load questions first", 
                 "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Tentativo di avviare il quiz senza domande caricate."); // Tentativo di avvio senza domande
             return;
         }
 
@@ -140,6 +150,7 @@ public class ServerGUI extends JFrame {
             setButtonsEnabled(false);
             quizRunning = true;
             updateStatus("Server started on port " + port);
+            System.out.println("Server avviato sulla porta " + port); // Server avviato
 
             // Abilita solo removeClientButton
             removeClientButton.setEnabled(true);
@@ -148,22 +159,26 @@ public class ServerGUI extends JFrame {
             new Thread(() -> {
                 try {
                     serverConnection.startServer();
+                    System.out.println("Server in ascolto per connessioni..."); // Server in ascolto
                 } catch (Exception ex) {
                     if (quizRunning) {
-                        SwingUtilities.invokeLater(() -> 
+                        SwingUtilities.invokeLater(() -> {
                             JOptionPane.showMessageDialog(this, 
                                 "Server error: " + ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE));
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                            System.out.println("Errore del server: " + ex.getMessage()); // Errore del server
+                        });
                     }
                 }
             }).start();
 
             // Attendi i client
             int option = JOptionPane.showConfirmDialog(this,
-                "Start the quiz when all clients are connected?",
+                "Start the quiz?",
                 "Start Quiz", JOptionPane.YES_NO_OPTION);
-                
+            
             if (option == JOptionPane.YES_OPTION) {
+                System.out.println("Quiz avviato dall'utente."); // Quiz avviato dall'utente
                 serverConnection.startGame();
                 updateStatus("Quiz in progress...");
                 
@@ -171,6 +186,7 @@ public class ServerGUI extends JFrame {
                 new Thread(() -> {
                     try {
                         serverConnection.waitForAllClientsToFinish();
+                        System.out.println("Quiz terminato, visualizzazione dei risultati."); // Quiz terminato
                         displayResults();
                         cleanup();
                         refreshClientsList();
@@ -179,11 +195,13 @@ public class ServerGUI extends JFrame {
                     }
                 }).start();
             } else {
+                System.out.println("Quiz non avviato dall'utente."); // Quiz non avviato
                 cleanup();
                 refreshClientsList();
             }
             
         } catch (IOException ex) {
+            System.out.println("Errore nell'avvio del server: " + ex.getMessage()); // Errore nell'avvio del server
             JOptionPane.showMessageDialog(this, 
                 "Error starting server: " + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
@@ -195,6 +213,7 @@ public class ServerGUI extends JFrame {
         String selectedClient = clientsList.getSelectedValue();
         if (selectedClient == null) {
             JOptionPane.showMessageDialog(this, "Please select a client to remove.", "No Client Selected", JOptionPane.WARNING_MESSAGE);
+            System.out.println("Tentativo di rimuovere un client senza selezione."); // Tentativo senza selezione
             return;
         }
 
@@ -203,13 +222,18 @@ public class ServerGUI extends JFrame {
             "Confirm Removal", JOptionPane.YES_NO_OPTION);
 
         if (confirmation == JOptionPane.YES_OPTION) {
+            System.out.println("Rimozione del client: " + selectedClient); // Rimozione del client
             boolean success = serverConnection.removeClient(selectedClient);
             if (success) {
                 JOptionPane.showMessageDialog(this, "Client " + selectedClient + " has been removed.", "Client Removed", JOptionPane.INFORMATION_MESSAGE);
+                System.out.println("Client " + selectedClient + " rimosso con successo."); // Client rimosso
                 refreshClientsList();
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to remove client: " + selectedClient, "Error", JOptionPane.ERROR_MESSAGE);
+                System.out.println("Fallita la rimozione del client: " + selectedClient); // Fallimento rimozione
             }
+        } else {
+            System.out.println("Rimozione del client " + selectedClient + " annullata dall'utente."); // Annullamento rimozione
         }
     }
 
@@ -227,7 +251,7 @@ public class ServerGUI extends JFrame {
             // Mostra un pop-up con il primo in classifica
             if (!leaderboard.isEmpty()) {
                 String topScorer = leaderboard.get(0).toString();
-                JOptionPane.showMessageDialog(this, "Il primo in classifica è: " + topScorer, "Classifica", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "The winner is: " + topScorer, "Leaderboard", JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
