@@ -27,6 +27,10 @@ public class Score implements Comparable<Score>, Serializable {
         return (correctAnswers * 100.0) / totalQuestions;
     }
 
+    public int getTotalQuestions() {
+        return totalQuestions;
+    }
+
     @Override
     public int compareTo(Score other) {
         int scoreCompare = Integer.compare(other.correctAnswers, this.correctAnswers);
