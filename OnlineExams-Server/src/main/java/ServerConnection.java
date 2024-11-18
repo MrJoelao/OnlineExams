@@ -143,6 +143,7 @@ public class ServerConnection {
                 finishSignal.countDown();
                 if (gameStarted) {
                     usedNames.remove(clientName);
+                    gui.updateLeaderboard(getScores());
                 }
                 clientsMap.remove(clientName);
                 if (gui != null) {
