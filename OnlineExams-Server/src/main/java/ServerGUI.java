@@ -223,6 +223,12 @@ public class ServerGUI extends JFrame {
             }
             results.append("=====================\n");
             logArea.append(results.toString());
+
+            // Mostra un pop-up con il primo in classifica
+            if (!leaderboard.isEmpty()) {
+                String topScorer = leaderboard.get(0).toString();
+                JOptionPane.showMessageDialog(this, "Il primo in classifica è: " + topScorer, "Classifica", JOptionPane.INFORMATION_MESSAGE);
+            }
         });
     }
 
