@@ -165,7 +165,13 @@ public class QuestionCreatorDialog extends JDialog {
         if (questions.isEmpty()) return;
         
         String defaultName = "quiz_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".txt";
-        String filePath = FileUtils.getDefaultPath(defaultName);
+        String fileName = JOptionPane.showInputDialog(this, "Enter file name:", defaultName);
+        
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = defaultName;
+        }
+        
+        String filePath = FileUtils.getDefaultPath(fileName);
         
         try {
             QuestionWriter.writeQuestionsToFile(filePath, questions);
