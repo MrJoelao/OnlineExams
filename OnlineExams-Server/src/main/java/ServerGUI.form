@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ServerGUI">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="20" y="20" width="600" height="400"/>
+      <xy x="20" y="20" width="800" height="600"/>
     </constraints>
     <properties>
       <minimumSize width="800" height="600"/>
       <preferredSize width="800" height="600"/>
-      <background color="#f0f0f0"/>
     </properties>
     <border type="none"/>
     <children>
       <scrollpane id="1c5d7">
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -24,7 +23,7 @@
             <properties>
               <editable value="false"/>
               <font name="Monospaced" size="12"/>
-              <background color="#ffffff"/>
+              <text value=""/>
             </properties>
           </component>
         </children>
@@ -35,9 +34,6 @@
         </constraints>
         <properties>
           <text value="Load Questions"/>
-          <background color="#4CAF50"/>
-          <foreground color="#ffffff"/>
-          <font size="14" style="bold"/>
         </properties>
       </component>
       <component id="f3d12" class="javax.swing.JButton" binding="createQuestionsButton">
@@ -46,25 +42,19 @@
         </constraints>
         <properties>
           <text value="Create Questions"/>
-          <background color="#2196F3"/>
-          <foreground color="#ffffff"/>
-          <font size="14" style="bold"/>
         </properties>
       </component>
       <component id="a8b23" class="javax.swing.JButton" binding="startQuizButton">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Start Quiz"/>
-          <background color="#FF9800"/>
-          <foreground color="#ffffff"/>
-          <font size="14" style="bold"/>
+          <text value="Start the server"/>
         </properties>
       </component>
       <component id="b2d34" class="javax.swing.JLabel" binding="statusLabel">
         <constraints>
-          <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Status: No questions loaded"/>
@@ -72,13 +62,26 @@
       </component>
       <component id="1a234" class="javax.swing.JButton" binding="exitButton">
         <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Exit"/>
-          <background color="#f44336"/>
-          <foreground color="#ffffff"/>
-          <font size="14" style="bold"/>
+        </properties>
+      </component>
+      <component id="newPortButton" class="javax.swing.JButton" binding="changePortButton">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Change Port"/>
+        </properties>
+      </component>
+      <component id="p1a234" class="javax.swing.JLabel" binding="portLabel">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Port: 12345"/>
         </properties>
       </component>
     </children>

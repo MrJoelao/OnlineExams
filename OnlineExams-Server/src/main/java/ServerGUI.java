@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import com.formdev.flatlaf.FlatDarculaLaf;
+import javax.swing.JOptionPane;
+import javax.swing.JLabel;
 
 public class ServerGUI extends JFrame {
     private JPanel mainPanel;
@@ -14,16 +16,20 @@ public class ServerGUI extends JFrame {
     private JTextArea logArea;
     private JLabel statusLabel;
     private JButton exitButton;
+    private JButton changePortButton;
+    private JLabel portLabel;
     
     private List<Question> loadedQuestions = null;
     private ServerConnection serverConnection = null;
     private boolean quizRunning = false;
+    private int port = 12345;
 
     public ServerGUI() {
         setLookAndFeel();
         setupFrame();
         setupLogging();
         setupListeners();
+        updatePortLabel();
         SwingUtilities.updateComponentTreeUI(this);
     }
 
@@ -55,6 +61,7 @@ public class ServerGUI extends JFrame {
         createQuestionsButton.addActionListener(e -> createQuestions());
         startQuizButton.addActionListener(e -> startQuiz());
         exitButton.addActionListener(e -> exitApplication());
+        changePortButton.addActionListener(e -> changePort());
     }
 
     private void loadQuestions() {
@@ -95,7 +102,6 @@ public class ServerGUI extends JFrame {
         }
 
         try {
-            int port = 12345;
             serverConnection = new ServerConnection(port, loadedQuestions);
             
             // Disabilita i pulsanti durante il quiz
@@ -209,6 +215,28 @@ public class ServerGUI extends JFrame {
         public void write(int b) {
             SwingUtilities.invokeLater(() -> textArea.append(String.valueOf((char)b)));
         }
+    }
+
+    private void changePort() {
+        String input = JOptionPane.showInputDialog(this, "Enter new port number:", "Change Port", JOptionPane.PLAIN_MESSAGE);
+        if (input != null) {
+            try {
+                int newPort = Integer.parseInt(input);
+                if (newPort < 0 || newPort > 65535) {
+                    JOptionPane.showMessageDialog(this, "Port must be between 0 and 65535.", "Invalid Port", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    port = newPort;
+                    updatePortLabel();
+                    updateStatus("Port changed to " + port);
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid integer.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void updatePortLabel() {
+        portLabel.setText("Port: " + port);
     }
 
     public static void main(String[] args) {
