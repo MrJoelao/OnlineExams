@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ServerGUI">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="6" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
       <xy x="20" y="20" width="800" height="600"/>
@@ -44,20 +44,12 @@
           <text value="Create Questions"/>
         </properties>
       </component>
-      <component id="a8b23" class="javax.swing.JButton" binding="startQuizButton">
+      <component id="newPortButton" class="javax.swing.JButton" binding="changePortButton">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Start the server"/>
-        </properties>
-      </component>
-      <component id="b2d34" class="javax.swing.JLabel" binding="statusLabel">
-        <constraints>
-          <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Status: No questions loaded"/>
+          <text value="Change Port"/>
         </properties>
       </component>
       <component id="1a234" class="javax.swing.JButton" binding="exitButton">
@@ -68,17 +60,50 @@
           <text value="Exit"/>
         </properties>
       </component>
-      <component id="newPortButton" class="javax.swing.JButton" binding="changePortButton">
+      <component id="a8b23" class="javax.swing.JButton" binding="startQuizButton">
         <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Change Port"/>
+          <text value="Start the server"/>
+        </properties>
+      </component>
+      <scrollpane id="d4g567">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e5h678" class="javax.swing.JList" binding="clientsList">
+            <constraints/>
+            <properties>
+              <model class="DefaultListModel">
+                <items/>
+              </model>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <component id="b2d34" class="javax.swing.JLabel" binding="statusLabel">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Status: No questions loaded"/>
+        </properties>
+      </component>
+      <component id="c3f456" class="javax.swing.JButton" binding="removeClientButton">
+        <constraints>
+          <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Remove Client"/>
         </properties>
       </component>
       <component id="p1a234" class="javax.swing.JLabel" binding="portLabel">
         <constraints>
-          <grid row="4" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Port: 12345"/>

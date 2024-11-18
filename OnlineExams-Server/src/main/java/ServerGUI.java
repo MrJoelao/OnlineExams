@@ -1,12 +1,14 @@
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import javax.swing.JOptionPane;
 import javax.swing.JLabel;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 
 public class ServerGUI extends JFrame {
     private JPanel mainPanel;
@@ -19,6 +21,11 @@ public class ServerGUI extends JFrame {
     private JButton changePortButton;
     private JLabel portLabel;
     
+    // Nuovi componenti per la gestione dei client
+    private JList<String> clientsList;
+    private DefaultListModel<String> clientsListModel;
+    private JButton removeClientButton;
+    
     private List<Question> loadedQuestions = null;
     private ServerConnection serverConnection = null;
     private boolean quizRunning = false;
@@ -29,6 +36,7 @@ public class ServerGUI extends JFrame {
         setupFrame();
         setupLogging();
         setupListeners();
+        initializeClientsList(); // Inizializza la lista dei client
         updatePortLabel();
         SwingUtilities.updateComponentTreeUI(this);
     }
@@ -56,12 +64,27 @@ public class ServerGUI extends JFrame {
         System.setErr(printStream);
     }
 
+    private void initializeClientsList() {
+        clientsListModel = new DefaultListModel<>();
+        clientsList.setModel(clientsListModel);
+        refreshClientsList();
+    }
+
+    private void refreshClientsList() {
+        clientsListModel.clear();
+        List<String> connectedClients = serverConnection != null ? serverConnection.getConnectedClientNames() : Collections.emptyList();
+        for (String clientName : connectedClients) {
+            clientsListModel.addElement(clientName);
+        }
+    }
+
     private void setupListeners() {
         loadQuestionsButton.addActionListener(e -> loadQuestions());
         createQuestionsButton.addActionListener(e -> createQuestions());
         startQuizButton.addActionListener(e -> startQuiz());
         exitButton.addActionListener(e -> exitApplication());
         changePortButton.addActionListener(e -> changePort());
+        removeClientButton.addActionListener(e -> removeSelectedClient()); // Listener per il nuovo pulsante
     }
 
     private void loadQuestions() {
@@ -103,12 +126,15 @@ public class ServerGUI extends JFrame {
 
         try {
             serverConnection = new ServerConnection(port, loadedQuestions);
-            
-            // Disabilita i pulsanti durante il quiz
+            serverConnection.setGui(this); // Imposta il riferimento alla GUI per aggiornamenti
+            // Disabilita i pulsanti durante il quiz, eccetto removeClientButton
             setButtonsEnabled(false);
             quizRunning = true;
             updateStatus("Server started on port " + port);
-            
+
+            // Abilita solo removeClientButton
+            removeClientButton.setEnabled(true);
+
             // Avvia il server in background
             new Thread(() -> {
                 try {
@@ -138,12 +164,14 @@ public class ServerGUI extends JFrame {
                         serverConnection.waitForAllClientsToFinish();
                         displayResults();
                         cleanup();
+                        refreshClientsList();
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
                 }).start();
             } else {
                 cleanup();
+                refreshClientsList();
             }
             
         } catch (IOException ex) {
@@ -151,6 +179,28 @@ public class ServerGUI extends JFrame {
                 "Error starting server: " + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
             cleanup();
+        }
+    }
+
+    private void removeSelectedClient() {
+        String selectedClient = clientsList.getSelectedValue();
+        if (selectedClient == null) {
+            JOptionPane.showMessageDialog(this, "Please select a client to remove.", "No Client Selected", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirmation = JOptionPane.showConfirmDialog(this, 
+            "Are you sure you want to remove client: " + selectedClient + "?",
+            "Confirm Removal", JOptionPane.YES_NO_OPTION);
+
+        if (confirmation == JOptionPane.YES_OPTION) {
+            boolean success = serverConnection.removeClient(selectedClient);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Client " + selectedClient + " has been removed.", "Client Removed", JOptionPane.INFORMATION_MESSAGE);
+                refreshClientsList();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to remove client: " + selectedClient, "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -198,23 +248,21 @@ public class ServerGUI extends JFrame {
         createQuestionsButton.setEnabled(enabled);
         startQuizButton.setEnabled(enabled);
         exitButton.setEnabled(enabled);
+        changePortButton.setEnabled(enabled);
+        removeClientButton.setEnabled(true); // Abilitato sempre
     }
 
     private void updateStatus(String status) {
         statusLabel.setText("Status: " + status);
     }
 
-    private static class CustomOutputStream extends java.io.OutputStream {
-        private final JTextArea textArea;
+    // Metodi per aggiornare la lista dei client dalla ServerConnection
+    public void addClientToList(String clientName) {
+        SwingUtilities.invokeLater(() -> clientsListModel.addElement(clientName));
+    }
 
-        public CustomOutputStream(JTextArea textArea) {
-            this.textArea = textArea;
-        }
-
-        @Override
-        public void write(int b) {
-            SwingUtilities.invokeLater(() -> textArea.append(String.valueOf((char)b)));
-        }
+    public void removeClientFromList(String clientName) {
+        SwingUtilities.invokeLater(() -> clientsListModel.removeElement(clientName));
     }
 
     private void changePort() {
@@ -237,6 +285,19 @@ public class ServerGUI extends JFrame {
 
     private void updatePortLabel() {
         portLabel.setText("Port: " + port);
+    }
+
+    private static class CustomOutputStream extends java.io.OutputStream {
+        private final JTextArea textArea;
+
+        public CustomOutputStream(JTextArea textArea) {
+            this.textArea = textArea;
+        }
+
+        @Override
+        public void write(int b) {
+            SwingUtilities.invokeLater(() -> textArea.append(String.valueOf((char)b)));
+        }
     }
 
     public static void main(String[] args) {

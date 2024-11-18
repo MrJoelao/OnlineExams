@@ -19,6 +19,8 @@ public class ServerConnection {
     private volatile boolean gameStarted = false;
     private volatile boolean isRunning = true;
     private final Set<String> usedNames = Collections.synchronizedSet(new HashSet<>());
+    private final ConcurrentMap<String, ClientHandler> clientsMap;
+    private ServerGUI gui; // Riferimento alla GUI
     
     public static final String START = "START";
     public static final String END = "END";
@@ -35,10 +37,34 @@ public class ServerConnection {
         this.scores = new ConcurrentHashMap<>();
         this.startSignal = new CountDownLatch(1);
         this.connectedClients = new AtomicInteger(0);
+        this.clientsMap = new ConcurrentHashMap<>();
+    }
+
+    // Metodo per impostare il riferimento alla GUI
+    public void setGui(ServerGUI gui) {
+        this.gui = gui;
+    }
+
+    public List<String> getConnectedClientNames() {
+        return new ArrayList<>(clientsMap.keySet());
+    }
+
+    public boolean removeClient(String clientName) {
+        ClientHandler handler = clientsMap.get(clientName);
+        if (handler != null) {
+            handler.sendEndMessage(); // Invia il messaggio "END" al client
+            handler.disconnect(); // Disconnette il client
+            clientsMap.remove(clientName);
+            if (gui != null) {
+                gui.removeClientFromList(clientName);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void startGame() {
-        finishSignal = new CountDownLatch(connectedClients.get());
+        finishSignal = new CountDownLatch(clientsMap.size());
         gameStarted = true;
         startSignal.countDown();
     }
@@ -96,6 +122,13 @@ public class ServerConnection {
                 return;
             }
 
+            // Aggiungi il client alla mappa e alla GUI
+            ClientHandler clientHandler = new ClientHandler(clientName, clientSocket, this);
+            clientsMap.put(clientName, clientHandler);
+            if (gui != null) {
+                gui.addClientToList(clientName);
+            }
+
             try {
                 startSignal.await();
                 
@@ -110,6 +143,10 @@ public class ServerConnection {
                 finishSignal.countDown();
                 if (gameStarted) {
                     usedNames.remove(clientName);
+                }
+                clientsMap.remove(clientName);
+                if (gui != null) {
+                    gui.removeClientFromList(clientName);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
