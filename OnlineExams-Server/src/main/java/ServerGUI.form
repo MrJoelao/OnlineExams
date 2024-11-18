@@ -6,8 +6,9 @@
       <xy x="20" y="20" width="600" height="400"/>
     </constraints>
     <properties>
-      <minimumSize width="600" height="400"/>
-      <preferredSize width="600" height="400"/>
+      <minimumSize width="800" height="600"/>
+      <preferredSize width="800" height="600"/>
+      <background color="#f0f0f0"/>
     </properties>
     <border type="none"/>
     <children>
@@ -22,7 +23,8 @@
             <constraints/>
             <properties>
               <editable value="false"/>
-              <font name="Monospaced"/>
+              <font name="Monospaced" size="12"/>
+              <background color="#ffffff"/>
             </properties>
           </component>
         </children>
@@ -33,6 +35,9 @@
         </constraints>
         <properties>
           <text value="Load Questions"/>
+          <background color="#4CAF50"/>
+          <foreground color="#ffffff"/>
+          <font size="14" style="bold"/>
         </properties>
       </component>
       <component id="f3d12" class="javax.swing.JButton" binding="createQuestionsButton">
@@ -41,6 +46,9 @@
         </constraints>
         <properties>
           <text value="Create Questions"/>
+          <background color="#2196F3"/>
+          <foreground color="#ffffff"/>
+          <font size="14" style="bold"/>
         </properties>
       </component>
       <component id="a8b23" class="javax.swing.JButton" binding="startQuizButton">
@@ -48,8 +56,10 @@
           <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <enabled value="false"/>
           <text value="Start Quiz"/>
+          <background color="#FF9800"/>
+          <foreground color="#ffffff"/>
+          <font size="14" style="bold"/>
         </properties>
       </component>
       <component id="b2d34" class="javax.swing.JLabel" binding="statusLabel">
@@ -66,6 +76,9 @@
         </constraints>
         <properties>
           <text value="Exit"/>
+          <background color="#f44336"/>
+          <foreground color="#ffffff"/>
+          <font size="14" style="bold"/>
         </properties>
       </component>
     </children>

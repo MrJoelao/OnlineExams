@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import com.formdev.flatlaf.FlatDarculaLaf;
 
 public class ServerGUI extends JFrame {
     private JPanel mainPanel;
@@ -19,9 +20,19 @@ public class ServerGUI extends JFrame {
     private boolean quizRunning = false;
 
     public ServerGUI() {
+        setLookAndFeel();
         setupFrame();
         setupLogging();
         setupListeners();
+        SwingUtilities.updateComponentTreeUI(this);
+    }
+
+    private void setLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(new FlatDarculaLaf());
+        } catch (Exception e) {
+            System.err.println("FlatLaf Darcula look and feel not available, using default.");
+        }
     }
 
     private void setupFrame() {
@@ -33,7 +44,7 @@ public class ServerGUI extends JFrame {
     }
 
     private void setupLogging() {
-        // Redirect System.out to logArea
+        // Reindirizza System.out a logArea
         PrintStream printStream = new PrintStream(new CustomOutputStream(logArea));
         System.setOut(printStream);
         System.setErr(printStream);
@@ -87,12 +98,12 @@ public class ServerGUI extends JFrame {
             int port = 12345;
             serverConnection = new ServerConnection(port, loadedQuestions);
             
-            // Disable buttons during quiz
+            // Disabilita i pulsanti durante il quiz
             setButtonsEnabled(false);
             quizRunning = true;
             updateStatus("Server started on port " + port);
             
-            // Start server in background
+            // Avvia il server in background
             new Thread(() -> {
                 try {
                     serverConnection.startServer();
@@ -106,7 +117,7 @@ public class ServerGUI extends JFrame {
                 }
             }).start();
 
-            // Wait for clients
+            // Attendi i client
             int option = JOptionPane.showConfirmDialog(this,
                 "Start the quiz when all clients are connected?",
                 "Start Quiz", JOptionPane.YES_NO_OPTION);
@@ -115,7 +126,7 @@ public class ServerGUI extends JFrame {
                 serverConnection.startGame();
                 updateStatus("Quiz in progress...");
                 
-                // Wait for quiz completion in background
+                // Attendi il completamento del quiz in background
                 new Thread(() -> {
                     try {
                         serverConnection.waitForAllClientsToFinish();
@@ -167,7 +178,7 @@ public class ServerGUI extends JFrame {
             int option = JOptionPane.showConfirmDialog(this,
                 "A quiz is currently running. Are you sure you want to exit?",
                 "Exit Confirmation", JOptionPane.YES_NO_OPTION);
-            if (option != JOptionPane.YES_OPTION) {
+            if (option != JOptionPane.YES_NO_OPTION) {
                 return;
             }
         }
@@ -198,5 +209,13 @@ public class ServerGUI extends JFrame {
         public void write(int b) {
             SwingUtilities.invokeLater(() -> textArea.append(String.valueOf((char)b)));
         }
+    }
+
+    public static void main(String[] args) {
+        // Avvia l'interfaccia grafica del server
+        SwingUtilities.invokeLater(() -> {
+            ServerGUI serverGUI = new ServerGUI();
+            serverGUI.setVisible(true);
+        });
     }
 }
