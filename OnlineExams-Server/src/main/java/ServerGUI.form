@@ -107,6 +107,22 @@
           </component>
         </children>
       </scrollpane>
+      <component id="h7i890" class="javax.swing.JList" binding="leaderboardList">
+        <constraints>
+          <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <model/>
+        </properties>
+      </component>
+      <component id="j8k901" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Leaderboard:"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>

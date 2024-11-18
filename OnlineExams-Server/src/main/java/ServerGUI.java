@@ -31,12 +31,16 @@ public class ServerGUI extends JFrame {
     private boolean quizRunning = false;
     private int port = 12345;
 
+    private JList<String> leaderboardList;
+    private DefaultListModel<String> leaderboardListModel;
+
     public ServerGUI() {
         setLookAndFeel();
         setupFrame();
         setupLogging();
         setupListeners();
         initializeClientsList(); // Inizializza la lista dei client
+        initializeLeaderboardList(); // Inizializza la lista della classifica
         updatePortLabel();
         SwingUtilities.updateComponentTreeUI(this);
     }
@@ -68,6 +72,11 @@ public class ServerGUI extends JFrame {
         clientsListModel = new DefaultListModel<>();
         clientsList.setModel(clientsListModel);
         refreshClientsList();
+    }
+
+    private void initializeLeaderboardList() {
+        leaderboardListModel = new DefaultListModel<>();
+        leaderboardList.setModel(leaderboardListModel);
     }
 
     private void refreshClientsList() {
@@ -207,6 +216,7 @@ public class ServerGUI extends JFrame {
     private void displayResults() {
         SwingUtilities.invokeLater(() -> {
             List<Score> leaderboard = serverConnection.getScores();
+            updateLeaderboard(leaderboard);
             StringBuilder results = new StringBuilder("\n=== FINAL RANKINGS ===\n");
             for (int i = 0; i < leaderboard.size(); i++) {
                 results.append(String.format("%d. %s%n", i + 1, leaderboard.get(i)));
@@ -298,6 +308,15 @@ public class ServerGUI extends JFrame {
         public void write(int b) {
             SwingUtilities.invokeLater(() -> textArea.append(String.valueOf((char)b)));
         }
+    }
+
+    public void updateLeaderboard(List<Score> leaderboard) {
+        SwingUtilities.invokeLater(() -> {
+            leaderboardListModel.clear();
+            for (Score score : leaderboard) {
+                leaderboardListModel.addElement(score.toString());
+            }
+        });
     }
 
     public static void main(String[] args) {
