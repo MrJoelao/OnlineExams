@@ -64,11 +64,11 @@ public class ServerConnection {
     }
 
     public void startGame() {
-        System.out.println("Avvio del gioco."); // Avvio del gioco
+        System.out.println("Starting the game."); // Avvio del gioco
         finishSignal = new CountDownLatch(clientsMap.size());
         gameStarted = true;
         startSignal.countDown();
-        System.out.println("Segnale di inizio inviato."); // Segnale di inizio inviato
+        System.out.println("Start signal sent."); // Segnale di inizio inviato
     }
 
     public void startServer() {
@@ -195,26 +195,26 @@ public class ServerConnection {
         try {
             out.writeObject(START);
             out.flush();
-            System.out.println("Inviato START a " + playerScore.getPlayerName()); // START inviato al client
+            System.out.println("Sent START to " + playerScore.getPlayerName()); // START inviato al client
 
             for (Question question : questions) {
                 out.writeObject(question);
                 out.flush();
-                System.out.println("Domanda inviata a " + playerScore.getPlayerName() + ": " + question.getText()); // Domanda inviata
+                System.out.println("Question sent to " + playerScore.getPlayerName() + ": " + question.getText()); // Domanda inviata
 
                 String response = (String) in.readObject();
                 if (isAnswerCorrect(question, response)) {
                     playerScore.incrementScore();
-                    System.out.println("Risposta corretta ricevuta da " + playerScore.getPlayerName()); // Risposta corretta
+                    System.out.println("Correct answer received from " + playerScore.getPlayerName()); // Risposta corretta
                 } else {
-                    System.out.println("Risposta errata ricevuta da " + playerScore.getPlayerName()); // Risposta errata
+                    System.out.println("Incorrect answer received from " + playerScore.getPlayerName()); // Risposta errata
                 }
-                System.out.println("Risposta ricevuta da " + playerScore.getPlayerName() + ": " + response); // Risposta ricevuta
+                System.out.println("Answer received from " + playerScore.getPlayerName() + ": " + response); // Risposta ricevuta
             }
 
             out.writeObject(END);
             out.flush();
-            System.out.println("Inviato END a " + playerScore.getPlayerName()); // END inviato al client
+            System.out.println("Sent END to " + playerScore.getPlayerName()); // END inviato al client
             
         } catch (IOException e) {
             System.out.println("Client " + playerScore.getPlayerName() + " disconnected during quiz");
@@ -235,7 +235,7 @@ public class ServerConnection {
         List<Score> leaderboard = new ArrayList<>(scores.values());
         Collections.sort(leaderboard);
 
-        System.out.println("\n=== CLASSIFICA FINALE ===");
+        System.out.println("\n=== FINAL LEADERBOARD ===");
         for (int i = 0; i < leaderboard.size(); i++) {
             System.out.printf("%d. %s%n", i + 1, leaderboard.get(i));
         }
@@ -264,20 +264,20 @@ public class ServerConnection {
     }
 
     public void close() throws IOException {
-        System.out.println("Chiusura del server."); // Chiusura del server
+        System.out.println("Closing the server."); // Chiusura del server
         isRunning = false;
         executor.shutdown();
         try {
             // Aspetta che tutti i thread terminino
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
-                System.out.println("Timeout raggiunto, forzata l'interruzione dei thread."); // Timeout e interruzione dei thread
+                System.out.println("Timeout reached, forced thread interruption."); // Timeout e interruzione dei thread
             }
         } catch (InterruptedException e) {
             executor.shutdownNow();
-            System.out.println("Interruzione durante la chiusura del server."); // Interruzione durante la chiusura
+            System.out.println("Interrupted during server shutdown."); // Interruzione durante la chiusura
         }
         serverSocket.close();
-        System.out.println("Server socket chiusa."); // Server socket chiusa
+        System.out.println("Server socket closed."); // Server socket chiusa
     }
 }

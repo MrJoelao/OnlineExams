@@ -24,9 +24,7 @@ public class ClientHandler implements Runnable {
             in = new ObjectInputStream(clientSocket.getInputStream());
 
             while (connected) {
-                // Gestione della comunicazione con il client
                 Object received = in.readObject();
-                // ... Logica esistente ...
             }
         } catch (IOException | ClassNotFoundException e) {
             if (connected) {
