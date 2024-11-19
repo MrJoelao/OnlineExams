@@ -6,7 +6,7 @@ public class Client {
     public static void main(String[] args) {
         String host = "localhost";
         int port = 12345;
-        String name = "Client";
+        String name = "Student";
 
         ClientConnection clientConnection = new ClientConnection(host, port, name);
 
@@ -27,6 +27,10 @@ public class Client {
             while (!clientConnection.isCommunicationStarted()) {
                 System.out.println("Waiting for the start signal...");
                 clientConnection.read();
+                if (clientConnection.isCommunicationEnded()) {
+                    System.out.println("Quiz finished!");
+                    break;
+                }
             }
             System.out.println("Quiz started!");
 
