@@ -5,6 +5,9 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+
 import javax.swing.JOptionPane;
 import javax.swing.JLabel;
 import javax.swing.DefaultListModel;
@@ -35,6 +38,8 @@ public class ServerGUI extends JFrame {
     private DefaultListModel<String> leaderboardListModel;
 
     private JButton startExamButton;
+
+    private JButton chooseThemeButton;
 
     public ServerGUI() {
         setLookAndFeel();
@@ -97,6 +102,7 @@ public class ServerGUI extends JFrame {
         exitButton.addActionListener(e -> exitApplication());
         changePortButton.addActionListener(e -> changePort());
         removeClientButton.addActionListener(e -> removeSelectedClient());
+        chooseThemeButton.addActionListener(e -> chooseTheme());
     }
 
     private void loadQuestions() {
@@ -352,6 +358,44 @@ public class ServerGUI extends JFrame {
                 leaderboardListModel.addElement(score.toString());
             }
         });
+    }
+
+    private void chooseTheme() {
+        String[] themes = {"Dark", "Light", "IntelliJ"};
+        String selectedTheme = (String) JOptionPane.showInputDialog(
+            this,
+            "Select Theme:",
+            "Theme Chooser",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            themes,
+            themes[0]
+        );
+
+        if (selectedTheme != null) {
+            try {
+                switch (selectedTheme) {
+                    case "Dark":
+                        UIManager.setLookAndFeel(new FlatDarculaLaf());
+                        break;
+                    case "Light":
+                        UIManager.setLookAndFeel(new FlatLightLaf());
+                        break;
+                    case "IntelliJ":
+                        UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                        break;
+                    default:
+                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
+                SwingUtilities.updateComponentTreeUI(this);
+                updateStatus("Theme changed to " + selectedTheme);
+                System.out.println("Theme changed to: " + selectedTheme); // Theme update
+            } catch (Exception ex) {
+                System.err.println("Error changing the theme: " + ex.getMessage());
+            }
+        } else {
+            System.out.println("Theme selection cancelled by the user."); // Theme selection cancellation
+        }
     }
 
     public static void main(String[] args) {
