@@ -203,6 +203,8 @@ public class ServerConnection {
                 System.out.println("Question sent to " + playerScore.getPlayerName() + ": " + question.getText()); // Domanda inviata
 
                 String response = (String) in.readObject();
+                System.out.println("Client " + playerScore.getPlayerName() + " responded to question '" + question.getText() + "' with: " + response); // Risposta del client
+
                 if (isAnswerCorrect(question, response)) {
                     playerScore.incrementScore();
                     System.out.println("Correct answer received from " + playerScore.getPlayerName()); // Risposta corretta
