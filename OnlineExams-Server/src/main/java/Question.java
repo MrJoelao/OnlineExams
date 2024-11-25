@@ -12,10 +12,10 @@ public class Question implements Serializable {
 
     public Question(String text, List<String> options, int correctAnswer) {
         if (options == null || options.isEmpty()) {
-            throw new IllegalArgumentException("The list of options cannot be empty. Please provide at least one option for the question.");
+            throw new IllegalArgumentException("The list of options cannot be empty");
         }
         if (correctAnswer < 0 || correctAnswer >= options.size()) {
-            throw new IllegalArgumentException("The index of the correct answer is invalid. It must be between 0 and " + (options.size() - 1) + ", inclusive.");
+            throw new IllegalArgumentException("Invalid correct answer index");
         }
         this.text = text;
         this.options = Collections.unmodifiableList(options);
@@ -36,5 +36,14 @@ public class Question implements Serializable {
 
     public int getOptionsCount() {
         return options.size();
+    }
+
+    @Override
+    public String toString() {
+        return "Question{" +
+                "text='" + text + '\'' +
+                ", options=" + options +
+                ", correctAnswer=" + correctAnswer +
+                '}';
     }
 }
