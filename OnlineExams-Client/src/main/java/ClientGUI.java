@@ -67,7 +67,7 @@ public class ClientGUI extends JFrame {
     private void setupListeners() {
         startButton.addActionListener(e -> handleStartButton());
         connectButton.addActionListener(e -> connectToServer());
-        exitButton.addActionListener(e -> exitApplication());
+        exitButton.addActionListener(e -> disconnectFromServer());
         
         nameField.addActionListener(e -> handleStartButton());
     }
@@ -101,6 +101,9 @@ public class ClientGUI extends JFrame {
             return;
         }
         
+        // Disabilita il pulsante connect durante la connessione
+        connectButton.setEnabled(false);
+        
         clientConnection = new ClientConnection(host, port, name);
         try {
             clientConnection.autoConnectForced();
@@ -108,6 +111,33 @@ public class ClientGUI extends JFrame {
             listenForQuestions();
         } catch (IOException | ClassNotFoundException e) {
             logArea.append("Error connecting to server: " + e.getMessage() + "\n");
+            // Riabilita il pulsante connect solo se la connessione fallisce
+            connectButton.setEnabled(true);
+            clientConnection = null;
+        }
+    }
+
+    private void disconnectFromServer() {
+        if (clientConnection != null) {
+            System.out.println("Disconnecting from server...");
+            clientConnection.close();
+            clientConnection = null;
+            
+            // Pulisci l'area di log
+            logArea.setText("");
+            
+            // Pulisci il pannello delle risposte
+            answerPanel.removeAll();
+            answerPanel.revalidate();
+            answerPanel.repaint();
+            
+            // Riabilita il pulsante Connect
+            connectButton.setEnabled(true);
+            
+            // Torna al pannello di login
+            showLoginPanel();
+            
+            System.out.println("Disconnected and returned to login screen");
         }
     }
 
@@ -132,6 +162,7 @@ public class ClientGUI extends JFrame {
                 SwingUtilities.invokeLater(() -> {
                     logArea.append("Error during quiz: " + e.getMessage() + "\n");
                     showErrorDialog("Connection Error", "Lost connection to server: " + e.getMessage());
+                    connectButton.setEnabled(true);
                 });
             }
         }).start();
