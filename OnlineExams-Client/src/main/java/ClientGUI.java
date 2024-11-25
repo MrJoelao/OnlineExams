@@ -178,12 +178,28 @@ public class ClientGUI extends JFrame {
             for (String option : options) {
                 JButton optionButton = new JButton(option);
                 optionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+                optionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
                 optionButton.setFont(new Font(optionButton.getFont().getName(), Font.PLAIN, 14));
-                optionButton.setMargin(new Insets(10, 10, 10, 10));
+                optionButton.setMargin(new Insets(10, 20, 10, 20));
+                optionButton.setFocusPainted(false);
+                optionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                
+                // Add hover effects
+                optionButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        optionButton.setBackground(optionButton.getBackground().darker());
+                    }
+
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        optionButton.setBackground(UIManager.getColor("Button.background"));
+                    }
+                });
+                
                 optionButton.addActionListener(e -> sendAnswer(option));
                 answerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
                 answerPanel.add(optionButton);
             }
+            answerPanel.add(Box.createVerticalGlue());
             answerPanel.revalidate();
             answerPanel.repaint();
         });
@@ -196,14 +212,6 @@ public class ClientGUI extends JFrame {
         } catch (IOException e) {
             logArea.append("Error sending answer: " + e.getMessage() + "\n");
         }
-    }
-
-    private void exitApplication() {
-        if (clientConnection != null) {
-            clientConnection.close();
-        }
-        dispose();
-        System.exit(0);
     }
 
     private void setLookAndFeel(String theme) {
