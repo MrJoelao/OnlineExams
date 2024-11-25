@@ -195,28 +195,32 @@ public class ServerConnection {
         try {
             out.writeObject(START);
             out.flush();
-            System.out.println("Sent START to " + playerScore.getPlayerName()); // START inviato al client
+            System.out.println("Sent START to " + playerScore.getPlayerName());
 
-            for (Question question : questions) {
+            for (int i = 0; i < questions.size(); i++) {
+                Question question = questions.get(i);
                 out.writeObject(question);
                 out.flush();
-                System.out.println("Question sent to " + playerScore.getPlayerName() + ": " + question.getText()); // Domanda inviata
+                System.out.println("Question sent to " + playerScore.getPlayerName() + ": " + question.getText());
 
                 String response = (String) in.readObject();
-                System.out.println("Client " + playerScore.getPlayerName() + " responded to question '" + question.getText() + "' with: " + response); // Risposta del client
+                System.out.println("Client " + playerScore.getPlayerName() + " responded: " + response);
 
-                if (isAnswerCorrect(question, response)) {
+                // Converti la risposta in indice
+                int responseIndex = convertResponseToIndex(response, question.getOptions());
+                if (responseIndex == question.getCorrectAnswer()) {
                     playerScore.incrementScore();
-                    System.out.println("Correct answer received from " + playerScore.getPlayerName()); // Risposta corretta
+                    System.out.println("Correct answer from " + playerScore.getPlayerName());
                 } else {
-                    System.out.println("Incorrect answer received from " + playerScore.getPlayerName()); // Risposta errata
+                    System.out.println("Incorrect answer from " + playerScore.getPlayerName() + 
+                                     " (expected: " + question.getCorrectAnswer() + 
+                                     ", got: " + responseIndex + ")");
                 }
-                System.out.println("Answer received from " + playerScore.getPlayerName() + ": " + response); // Risposta ricevuta
             }
 
             out.writeObject(END);
             out.flush();
-            System.out.println("Sent END to " + playerScore.getPlayerName()); // END inviato al client
+            System.out.println("Sent END to " + playerScore.getPlayerName());
             
         } catch (IOException e) {
             System.out.println("Client " + playerScore.getPlayerName() + " disconnected during quiz");
@@ -224,13 +228,14 @@ public class ServerConnection {
         }
     }
 
-    private boolean isAnswerCorrect(Question question, String response) {
-        try {
-            int answerIndex = Integer.parseInt(response);
-            return answerIndex == question.getCorrectAnswer();
-        } catch (NumberFormatException e) {
-            return false;
+    private int convertResponseToIndex(String response, List<String> options) {
+        // Cerca la risposta nell'elenco delle opzioni
+        for (int i = 0; i < options.size(); i++) {
+            if (options.get(i).equals(response)) {
+                return i;
+            }
         }
+        return -1; // Risposta non trovata
     }
 
     private synchronized void printLeaderboard() {
@@ -266,20 +271,16 @@ public class ServerConnection {
     }
 
     public void close() throws IOException {
-        System.out.println("Closing the server."); // Chiusura del server
+        System.out.println("Closing the server.");
         isRunning = false;
         executor.shutdown();
         try {
-            // Aspetta che tutti i thread terminino
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
-                System.out.println("Timeout reached, forced thread interruption."); // Timeout e interruzione dei thread
             }
         } catch (InterruptedException e) {
             executor.shutdownNow();
-            System.out.println("Interrupted during server shutdown."); // Interruzione durante la chiusura
         }
         serverSocket.close();
-        System.out.println("Server socket closed."); // Server socket chiusa
     }
 }
