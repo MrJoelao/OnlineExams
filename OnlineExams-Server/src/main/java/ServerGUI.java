@@ -1,10 +1,14 @@
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -15,13 +19,13 @@ import javax.swing.JList;
 
 public class ServerGUI extends JFrame {
     private JPanel mainPanel;
+    private JPanel serverPanel;
+    private JTextArea logArea;
     private JButton loadQuestionsButton;
     private JButton createQuestionsButton;
     private JButton startQuizButton;
-    private JTextArea logArea;
     private JLabel statusLabel;
-    private JButton exitButton;
-    private JButton changePortButton;
+    private JButton settingsButton;
     private JLabel portLabel;
     
     // Nuovi componenti per la gestione dei client
@@ -39,24 +43,35 @@ public class ServerGUI extends JFrame {
 
     private JButton startExamButton;
 
-    private JButton chooseThemeButton;
-
     public ServerGUI() {
-        setLookAndFeel();
+        setLookAndFeel("Dark");
         setupFrame();
         setupLogging();
         setupListeners();
-        initializeClientsList(); // Inizializza la lista dei client
-        initializeLeaderboardList(); // Inizializza la lista della classifica
+        initializeClientsList();
+        initializeLeaderboardList();
         updatePortLabel();
         SwingUtilities.updateComponentTreeUI(this);
     }
 
-    private void setLookAndFeel() {
+    private void setLookAndFeel(String theme) {
         try {
-            UIManager.setLookAndFeel(new FlatDarculaLaf());
+            switch (theme) {
+                case "Darcula":
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    break;
+                case "Dark":
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
+                    break;
+                case "Light":
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    break;
+                default:
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+            SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
-            System.err.println("FlatLaf Darcula look and feel not available, using default.");
+            System.err.println("Error setting theme: " + e.getMessage());
         }
     }
 
@@ -97,12 +112,30 @@ public class ServerGUI extends JFrame {
     private void setupListeners() {
         loadQuestionsButton.addActionListener(e -> loadQuestions());
         createQuestionsButton.addActionListener(e -> createQuestions());
-        startQuizButton.addActionListener(e -> startQuiz());
+        startQuizButton.addActionListener(e -> startServer());
         startExamButton.addActionListener(e -> startExam());
-        exitButton.addActionListener(e -> exitApplication());
-        changePortButton.addActionListener(e -> changePort());
+        settingsButton.addActionListener(e -> showSettingsDialog());
         removeClientButton.addActionListener(e -> removeSelectedClient());
-        chooseThemeButton.addActionListener(e -> chooseTheme());
+
+        // Add window closing listener
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeServer();
+                dispose();
+            }
+        });
+    }
+
+    private void closeServer() {
+        if (serverConnection != null) {
+            try {
+                serverConnection.close();
+                updateStatus("Server closed");
+            } catch (IOException ex) {
+                updateStatus("Error closing server: " + ex.getMessage());
+            }
+        }
     }
 
     private void loadQuestions() {
@@ -143,7 +176,7 @@ public class ServerGUI extends JFrame {
         }
     }
 
-    private void startQuiz() {
+    private void startServer() {
         if (loadedQuestions == null || loadedQuestions.isEmpty()) {
             JOptionPane.showMessageDialog(this, 
                 "Please load questions first", 
@@ -280,26 +313,11 @@ public class ServerGUI extends JFrame {
         updateStatus("Quiz finished");
     }
 
-    private void exitApplication() {
-        if (quizRunning) {
-            int option = JOptionPane.showConfirmDialog(this,
-                "A quiz is currently running. Are you sure you want to exit?",
-                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
-            if (option != JOptionPane.YES_NO_OPTION) {
-                return;
-            }
-        }
-        cleanup();
-        dispose();
-        System.exit(0);
-    }
-
     private void setButtonsEnabled(boolean enabled) {
         loadQuestionsButton.setEnabled(enabled);
         createQuestionsButton.setEnabled(enabled);
         startQuizButton.setEnabled(enabled);
-        exitButton.setEnabled(enabled);
-        changePortButton.setEnabled(enabled);
+        settingsButton.setEnabled(enabled);
         removeClientButton.setEnabled(true); // Abilitato sempre
     }
 
@@ -316,21 +334,54 @@ public class ServerGUI extends JFrame {
         SwingUtilities.invokeLater(() -> clientsListModel.removeElement(clientName));
     }
 
-    private void changePort() {
-        String input = JOptionPane.showInputDialog(this, "Enter new port number:", "Change Port", JOptionPane.PLAIN_MESSAGE);
-        if (input != null) {
+    private void showSettingsDialog() {
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
+        
+        // Port settings
+        JPanel portPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel portInputLabel = new JLabel("Port: ");
+        JTextField portField = new JTextField(String.valueOf(port), 6);
+        portPanel.add(portInputLabel);
+        portPanel.add(portField);
+        
+        // Theme settings
+        JPanel themePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel themeLabel = new JLabel("Theme: ");
+        String[] themes = {"Light", "Dark", "Darcula", "System"};
+        JComboBox<String> themeCombo = new JComboBox<>(themes);
+        themePanel.add(themeLabel);
+        themePanel.add(themeCombo);
+        
+        settingsPanel.add(portPanel);
+        settingsPanel.add(Box.createVerticalStrut(10));
+        settingsPanel.add(themePanel);
+        
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            settingsPanel,
+            "Settings",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+        
+        if (result == JOptionPane.OK_OPTION) {
+            // Apply port changes
             try {
-                int newPort = Integer.parseInt(input);
-                if (newPort < 0 || newPort > 65535) {
-                    JOptionPane.showMessageDialog(this, "Port must be between 0 and 65535.", "Invalid Port", JOptionPane.ERROR_MESSAGE);
-                } else {
+                int newPort = Integer.parseInt(portField.getText().trim());
+                if (newPort > 0 && newPort < 65536) {
                     port = newPort;
                     updatePortLabel();
-                    updateStatus("Port changed to " + port);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Invalid port number. Must be between 1 and 65535.");
                 }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid integer.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid port number format.");
             }
+            
+            // Apply theme changes
+            String selectedTheme = (String) themeCombo.getSelectedItem();
+            setLookAndFeel(selectedTheme);
         }
     }
 
@@ -358,44 +409,6 @@ public class ServerGUI extends JFrame {
                 leaderboardListModel.addElement(score.toString());
             }
         });
-    }
-
-    private void chooseTheme() {
-        String[] themes = {"Dark", "Light", "IntelliJ"};
-        String selectedTheme = (String) JOptionPane.showInputDialog(
-            this,
-            "Select Theme:",
-            "Theme Chooser",
-            JOptionPane.PLAIN_MESSAGE,
-            null,
-            themes,
-            themes[0]
-        );
-
-        if (selectedTheme != null) {
-            try {
-                switch (selectedTheme) {
-                    case "Dark":
-                        UIManager.setLookAndFeel(new FlatDarculaLaf());
-                        break;
-                    case "Light":
-                        UIManager.setLookAndFeel(new FlatLightLaf());
-                        break;
-                    case "IntelliJ":
-                        UIManager.setLookAndFeel(new FlatIntelliJLaf());
-                        break;
-                    default:
-                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }
-                SwingUtilities.updateComponentTreeUI(this);
-                updateStatus("Theme changed to " + selectedTheme);
-                System.out.println("Theme changed to: " + selectedTheme); // Theme update
-            } catch (Exception ex) {
-                System.err.println("Error changing the theme: " + ex.getMessage());
-            }
-        } else {
-            System.out.println("Theme selection cancelled by the user."); // Theme selection cancellation
-        }
     }
 
     public static void main(String[] args) {
