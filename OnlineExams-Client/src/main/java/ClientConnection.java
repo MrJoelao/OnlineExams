@@ -201,4 +201,8 @@ public class ClientConnection {
             }
         }
     }
+
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed();
+    }
 }
