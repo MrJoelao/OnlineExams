@@ -52,6 +52,10 @@ public class ClientGUI extends JFrame {
         themeItem.addActionListener(e -> chooseTheme());
         menu.add(themeItem);
 
+        JMenuItem changeNameItem = new JMenuItem("Change Nickname");
+        changeNameItem.addActionListener(e -> changeNickname());
+        menu.add(changeNameItem);
+
         JMenuItem settingsItem = new JMenuItem("Settings");
         settingsItem.addActionListener(e -> showSettingsDialog());
         menu.add(settingsItem);
@@ -258,6 +262,31 @@ public class ClientGUI extends JFrame {
                 JOptionPane.ERROR_MESSAGE
             );
         });
+    }
+
+    private void changeNickname() {
+        if (clientConnection != null && clientConnection.isConnected()) {
+            System.out.println("Cannot change nickname while connected to server"); // Connection status check
+            JOptionPane.showMessageDialog(this,
+                "You cannot change your nickname while connected to the server.",
+                "Cannot Change Nickname",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String newName = JOptionPane.showInputDialog(this,
+            "Enter new nickname:",
+            "Change Nickname",
+            JOptionPane.PLAIN_MESSAGE);
+
+        if (newName != null && !newName.trim().isEmpty()) {
+            name = newName.trim();
+            nameField.setText(name);
+            System.out.println("Nickname changed to: " + name); // Nickname update
+            logArea.append("Nickname changed to: " + name + "\n");
+        } else {
+            System.out.println("Nickname change cancelled or invalid input"); // Change cancelled
+        }
     }
 
     public static void main(String[] args) {
