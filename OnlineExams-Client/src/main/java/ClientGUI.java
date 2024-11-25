@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.CardLayout;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -10,20 +11,28 @@ import java.util.List;
 
 public class ClientGUI extends JFrame {
     private JPanel mainPanel;
+    private JPanel loginPanel;
+    private JPanel examPanel;
+    private JTextField nameField;
+    private JButton startButton;
     private JTextArea logArea;
     private JButton connectButton;
     private JButton exitButton;
     private JPanel answerPanel;
     private ClientConnection clientConnection;
-    private String name = "Student";
+    private String name;
     private String host = "localhost";
     private int port = 12345;
+    
+    private static final String LOGIN_CARD = "loginCard";
+    private static final String EXAM_CARD = "examCard";
 
     public ClientGUI() {
-        setLookAndFeel("Darcula"); // Imposta il tema predefinito su FlatDarculaLaf
+        setLookAndFeel("Darcula");
         setupFrame();
         setupMenu();
         setupListeners();
+        showLoginPanel();
         SwingUtilities.updateComponentTreeUI(this);
     }
 
@@ -52,11 +61,42 @@ public class ClientGUI extends JFrame {
     }
 
     private void setupListeners() {
+        startButton.addActionListener(e -> handleStartButton());
         connectButton.addActionListener(e -> connectToServer());
         exitButton.addActionListener(e -> exitApplication());
+        
+        nameField.addActionListener(e -> handleStartButton());
+    }
+
+    private void showLoginPanel() {
+        CardLayout cl = (CardLayout) mainPanel.getLayout();
+        cl.show(mainPanel, LOGIN_CARD);
+    }
+
+    private void showExamPanel() {
+        CardLayout cl = (CardLayout) mainPanel.getLayout();
+        cl.show(mainPanel, EXAM_CARD);
+    }
+
+    private void handleStartButton() {
+        String input = nameField.getText().trim();
+        if (input.isEmpty()) {
+            showErrorDialog("Invalid Name", "Name cannot be empty. Please try again.");
+            return;
+        }
+        
+        name = input;
+        showExamPanel();
+        logArea.append("Welcome, " + name + "!\n");
     }
 
     private void connectToServer() {
+        if (name == null || name.trim().isEmpty()) {
+            showErrorDialog("Invalid Name", "Please enter your name first.");
+            showLoginPanel();
+            return;
+        }
+        
         clientConnection = new ClientConnection(host, port, name);
         try {
             clientConnection.autoConnectForced();
@@ -73,7 +113,10 @@ public class ClientGUI extends JFrame {
                 while (true) {
                     Object receivedObject = clientConnection.read();
                     if (clientConnection.isCommunicationEnded()) {
-                        logArea.append("Quiz finished!\n");
+                        SwingUtilities.invokeLater(() -> {
+                            logArea.append("Quiz completed!\n");
+                            showExamEndDialog();
+                        });
                         break;
                     }
                     if (clientConnection.isQuestion(receivedObject)) {
@@ -82,7 +125,10 @@ public class ClientGUI extends JFrame {
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
-                logArea.append("Error during quiz: " + e.getMessage() + "\n");
+                SwingUtilities.invokeLater(() -> {
+                    logArea.append("Error during quiz: " + e.getMessage() + "\n");
+                    showErrorDialog("Connection Error", "Lost connection to server: " + e.getMessage());
+                });
             }
         }).start();
     }
@@ -91,10 +137,16 @@ public class ClientGUI extends JFrame {
         SwingUtilities.invokeLater(() -> {
             logArea.append("\nQuestion: " + question.getText() + "\n");
             answerPanel.removeAll();
+            answerPanel.setLayout(new BoxLayout(answerPanel, BoxLayout.Y_AXIS));
+            
             List<String> options = question.getOptions();
             for (String option : options) {
                 JButton optionButton = new JButton(option);
+                optionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+                optionButton.setFont(new Font(optionButton.getFont().getName(), Font.PLAIN, 14));
+                optionButton.setMargin(new Insets(10, 10, 10, 10));
                 optionButton.addActionListener(e -> sendAnswer(option));
+                answerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
                 answerPanel.add(optionButton);
             }
             answerPanel.revalidate();
@@ -183,6 +235,29 @@ public class ClientGUI extends JFrame {
                 logArea.append("Invalid port number.\n");
             }
         }
+    }
+
+    private void showExamEndDialog() {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(
+                this,
+                "You have completed the exam!\nThank you for your participation.",
+                "Exam Completed",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+            connectButton.setEnabled(false);
+        });
+    }
+
+    private void showErrorDialog(String title, String message) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(
+                this,
+                message,
+                title,
+                JOptionPane.ERROR_MESSAGE
+            );
+        });
     }
 
     public static void main(String[] args) {
