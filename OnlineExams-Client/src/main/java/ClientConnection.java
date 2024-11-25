@@ -154,10 +154,15 @@ public class ClientConnection {
     public Object read() throws IOException, ClassNotFoundException {
         try {
             receivedObject = in.readObject();
+            // Se riceviamo ERROR, significa che siamo stati disconnessi
+            if (isString(receivedObject) && receivedObject.equals(ERROR)) {
+                throw new IOException("Disconnected by server");
+            }
+            return receivedObject;
         } catch (EOFException e) {
             receivedObject = ERROR;
+            throw new IOException("Connection closed by server");
         }
-        return receivedObject;
     }
 
     // Metodo per chiudere la connessione
