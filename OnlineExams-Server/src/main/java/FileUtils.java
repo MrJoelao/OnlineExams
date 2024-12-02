@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class FileUtils {
     private static final String DEFAULT_DIRECTORY = "questions";
+    private static final String LEADERBOARD_DIRECTORY = "leaderboards";
     
     public static String getDefaultPath(String filename) {
         createDefaultDirectory();
@@ -31,6 +32,19 @@ public class FileUtils {
             Files.createDirectories(Paths.get(DEFAULT_DIRECTORY));
         } catch (IOException e) {
             System.err.println("Could not create default directory: " + e.getMessage());
+        }
+    }
+    
+    public static String getLeaderboardPath(String filename) {
+        createLeaderboardDirectory();
+        return Paths.get(LEADERBOARD_DIRECTORY, filename).toString();
+    }
+    
+    private static void createLeaderboardDirectory() {
+        try {
+            Files.createDirectories(Paths.get(LEADERBOARD_DIRECTORY));
+        } catch (IOException e) {
+            System.err.println("Could not create leaderboard directory: " + e.getMessage());
         }
     }
 } 
