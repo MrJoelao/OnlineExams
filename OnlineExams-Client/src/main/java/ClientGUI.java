@@ -3,7 +3,6 @@ import java.awt.CardLayout;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.*;
 import java.io.IOException;
@@ -174,6 +173,10 @@ public class ClientGUI extends JFrame {
             answerPanel.removeAll();
             answerPanel.setLayout(new BoxLayout(answerPanel, BoxLayout.Y_AXIS));
             
+            // Creo uno JScrollPane per gestire lo scrolling quando ci sono troppe opzioni
+            JPanel scrollContent = new JPanel();
+            scrollContent.setLayout(new BoxLayout(scrollContent, BoxLayout.Y_AXIS));
+
             List<String> options = question.getOptions();
             for (String option : options) {
                 JButton optionButton = new JButton(option);
@@ -184,7 +187,7 @@ public class ClientGUI extends JFrame {
                 optionButton.setFocusPainted(false);
                 optionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 
-                // Add hover effects
+                // Aggiungo gli effetti hover
                 optionButton.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent evt) {
                         optionButton.setBackground(optionButton.getBackground().darker());
@@ -196,10 +199,22 @@ public class ClientGUI extends JFrame {
                 });
                 
                 optionButton.addActionListener(e -> sendAnswer(option));
-                answerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-                answerPanel.add(optionButton);
+                scrollContent.add(Box.createRigidArea(new Dimension(0, 10)));
+                scrollContent.add(optionButton);
             }
-            answerPanel.add(Box.createVerticalGlue());
+
+            // Aggiungo padding in fondo
+            scrollContent.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            // Creo e configuro lo JScrollPane
+            JScrollPane scrollPane = new JScrollPane(scrollContent);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setBorder(null); // Rimuovo il bordo dello scrollPane
+
+            // Aggiungo lo scrollPane al pannello delle risposte
+            answerPanel.add(scrollPane);
+
             answerPanel.revalidate();
             answerPanel.repaint();
         });
