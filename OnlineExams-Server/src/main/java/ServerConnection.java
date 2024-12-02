@@ -7,6 +7,10 @@ import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ServerConnection {
     private final ServerSocket serverSocket;
@@ -101,6 +105,8 @@ public class ServerConnection {
 
     public void waitForAllClientsToFinish() throws InterruptedException {
         finishSignal.await();
+        // Salva la classifica su file dopo che tutti i client hanno finito
+        saveLeaderboardToFile();
     }
 
     public List<Score> getScores() {
@@ -282,5 +288,83 @@ public class ServerConnection {
             executor.shutdownNow();
         }
         serverSocket.close();
+    }
+
+    private void saveLeaderboardToFile() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        String filename = "exam_results_" + now.format(formatter) + ".txt";
+        
+        String filePath = FileUtils.getLeaderboardPath(filename);
+        
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            List<Score> leaderboard = new ArrayList<>(scores.values());
+            Collections.sort(leaderboard);
+            
+            // Informazioni generali dell'esame
+            writer.println("EXAM REPORT");
+            writer.println("Date: " + now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            writer.println("Time: " + now.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            writer.println("Total Questions: " + questions.size());
+            writer.println("Number of Participants: " + leaderboard.size());
+            
+            // Statistiche generali
+            double avgScore = leaderboard.stream()
+                    .mapToDouble(Score::getPercentage)
+                    .average()
+                    .orElse(0.0);
+            double maxScore = leaderboard.stream()
+                    .mapToDouble(Score::getPercentage)
+                    .max()
+                    .orElse(0.0);
+            double minScore = leaderboard.stream()
+                    .mapToDouble(Score::getPercentage)
+                    .min()
+                    .orElse(0.0);
+            
+            writer.println("\nSTATISTICS");
+            writer.printf("Average Score: %.1f%%%n", avgScore);
+            writer.printf("Highest Score: %.1f%%%n", maxScore);
+            writer.printf("Lowest Score: %.1f%%%n", minScore);
+            
+            // Distribuzione dei voti
+            writer.println("\nGRADE DISTRIBUTION");
+            int excellent = countScoresInRange(leaderboard, 90, 100);
+            int good = countScoresInRange(leaderboard, 70, 89);
+            int average = countScoresInRange(leaderboard, 60, 69);
+            int poor = countScoresInRange(leaderboard, 0, 59);
+            
+            writer.printf("90-100%%: %d students%n", excellent);
+            writer.printf("70-89%%:  %d students%n", good);
+            writer.printf("60-69%%:  %d students%n", average);
+            writer.printf("0-59%%:   %d students%n", poor);
+            
+            // Risultati dettagliati
+            writer.println("\nDETAILED RESULTS");
+            writer.printf("%-5s %-20s %-12s %-10s %-10s%n", 
+                         "Rank", "Name", "Score", "Correct", "Percentage");
+            writer.println("-".repeat(60));
+            
+            for (int i = 0; i < leaderboard.size(); i++) {
+                Score score = leaderboard.get(i);
+                writer.printf("%-5d %-20s %-12s %-10d %.1f%%%n",
+                             i + 1,
+                             score.getPlayerName(),
+                             score.getCorrectAnswers() + "/" + score.getTotalQuestions(),
+                             score.getCorrectAnswers(),
+                             score.getPercentage());
+            }
+            
+            System.out.println("Detailed results saved to file: " + filePath);
+            
+        } catch (IOException e) {
+            System.err.println("Error saving results to file: " + e.getMessage());
+        }
+    }
+
+    private int countScoresInRange(List<Score> scores, double min, double max) {
+        return (int) scores.stream()
+                .filter(s -> s.getPercentage() >= min && s.getPercentage() <= max)
+                .count();
     }
 }
