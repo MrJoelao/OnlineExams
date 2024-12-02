@@ -1,0 +1,47 @@
+Quale classe viene utilizzata per creare un server socket in Java?
+4
+ServerSocket
+Socket
+DatagramSocket
+ServerConnection
+0
+
+Quale metodo di `Socket` restituisce un flusso di input per ricevere dati?
+4
+getInputStream()
+getOutputStream()
+receiveStream()
+readData()
+0
+
+Qual è la porta predefinita del protocollo HTTP spesso utilizzata per la connessione dei socket?
+4
+80
+8080
+443
+25
+0
+
+Quale eccezione viene sollevata se un socket non può connettersi a un host?
+4
+IOException
+SocketException
+UnknownHostException
+ConnectionException
+2
+
+Quale metodo è utilizzato per chiudere un socket in Java?
+4
+terminate()
+shutdown()
+close()
+disconnect()
+2
+
+Quale classe viene utilizzata per inviare pacchetti UDP in Java?
+4
+DatagramPacket
+DatagramSocket
+Socket
+UDPPacket
+0

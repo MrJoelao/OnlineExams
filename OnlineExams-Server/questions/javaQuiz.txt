@@ -1,0 +1,32 @@
+Quale keyword viene utilizzata per creare una classe in Java?
+4
+class
+struct
+object
+type
+0
+
+Quale di questi NON è un tipo primitivo in Java?
+4
+int
+String
+boolean
+double
+1
+
+Cosa significa OOP?
+4
+Object Oriented Programming
+Object Oriented Protocol
+Object Oriented Process
+Object Oriented Package
+0
+
+Quale metodo viene chiamato automaticamente quando si crea un nuovo oggetto?
+4
+finalize()
+main()
+constructor()
+new()
+2
+
